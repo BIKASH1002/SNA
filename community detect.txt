@@ -1,0 +1,41 @@
+import networkx as nx
+from networkx.algorithms.community import girvan_newman, modularity
+from scipy.cluster import hierarchy
+
+# Create a graph
+G = nx.Graph()
+
+# Add nodes and edges to the graph
+
+# Perform Girvan-Newman algorithm
+comp = girvan_newman(G)
+
+# Get the optimal community partition based on modularity
+best_partition = None
+best_modularity = -1
+for communities in comp:
+    curr_modularity = modularity(G, communities)
+    if curr_modularity > best_modularity:
+        best_modularity = curr_modularity
+        best_partition = communities
+
+# Hierarchical clustering
+dendrogram = hierarchy.linkage(nx.to_numpy_array(G), method='average')
+
+# Plot the dendrogram
+hierarchy.dendrogram(dendrogram)
+
+# Set the desired number of communities (determined visually from the dendrogram)
+num_communities = 3
+
+# Perform hierarchical clustering based on the desired number of communities
+cut_tree = hierarchy.cut_tree(dendrogram, n_clusters=num_communities)
+
+# Convert the cut_tree into a dictionary mapping nodes to community IDs
+partition = {}
+for node, cluster in enumerate(cut_tree):
+    partition[node] = cluster[0]
+
+# Print the nodes and their corresponding community assignments
+for node, community_id in partition.items():
+    print(f"Node {node}: Community {community_id}")
